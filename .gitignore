@@ -22,3 +22,12 @@ erl_crash.dump
 # Ignore package tarball (built via "mix hex.build").
 wick-*.tar
 
+# Rust build artefacts from the native NIF crate.
+/target/
+/native/wick/target/
+
+# Compiled NIF copied into priv by Rustler.
+/priv/native/
+
+.claude
+
