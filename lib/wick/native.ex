@@ -30,9 +30,24 @@ defmodule Wick.Native do
   lives elsewhere in the future `Wick` supervision tree.
   """
 
-  use Rustler,
-    otp_app: :wick,
-    crate: :wick
+  # The transport NIF binds the Linux FUSE kernel ABI (`/dev/fuse`,
+  # `fusermount3`, `pipe2`, `SOCK_CLOEXEC`), none of which exist on other
+  # platforms. Build the crate only on Linux; elsewhere skip the Rust build
+  # and warn, leaving the stubs below to raise `:nif_not_loaded` if called.
+  # The pure-Elixir `Wick.Protocol` codec is unaffected.
+  if :os.type() == {:unix, :linux} do
+    use Rustler,
+      otp_app: :wick,
+      crate: :wick
+  else
+    IO.warn(
+      "Wick.Native's FUSE transport only compiles on Linux; got " <>
+        "#{inspect(:os.type())}. Skipping the native NIF build — Wick.Native " <>
+        "functions will raise :nif_not_loaded if called. The Wick.Protocol " <>
+        "codec is unaffected.",
+      []
+    )
+  end
 
   @typedoc """
   Opaque handle wrapping a non-blocking file descriptor. The fd is closed

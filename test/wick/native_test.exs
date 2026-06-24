@@ -1,6 +1,8 @@
 defmodule Wick.NativeTest do
   use ExUnit.Case, async: true
 
+  @moduletag :nif
+
   alias Wick.Native
 
   doctest Native
