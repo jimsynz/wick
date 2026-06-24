@@ -3,7 +3,11 @@
   skipped: true,
   tools: [
     # Elixir tools
-    {:compiler, "mix compile --warnings-as-errors"},
+    # `--force` so Rustler always regenerates priv/native/wick.so before the
+    # NIF-loading tools (ex_unit, doctor, ex_doc) run. A cache-restored,
+    # up-to-date build otherwise skips the Rustler step and leaves the .so
+    # absent, since it lives outside the cached _build tree.
+    {:compiler, "mix compile --force --warnings-as-errors"},
     {:formatter, "mix format --check-formatted"},
     {:credo, "mix credo --strict"},
     {:dialyzer, "mix dialyzer"},
