@@ -88,6 +88,10 @@ the `select_read` / `read_frame` / `write_frame` path can be driven
 end-to-end. Tests that exercise `Wick.Fusermount.mount/2` are tagged
 `:fuse` and skipped on hosts where `/dev/fuse` is not available.
 
+## GitHub Mirror
+
+Eventually, [Forgejo](https://www.forgejo.org) will support fully federated operation, but for now there's a [mirror of this repository on GitHub](https://www.github.com/jimsynz/wick) - feel free to open issues and PRs there.
+
 ## Licence
 
 Apache-2.0 — see [LICENSE](LICENSE) for details.
