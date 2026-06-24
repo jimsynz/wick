@@ -41,6 +41,7 @@ defmodule Wick.MixProject do
       },
       files: [
         "lib",
+        "documentation",
         "native/wick/src",
         "native/wick/Cargo.toml",
         "Cargo.toml",
@@ -59,7 +60,25 @@ defmodule Wick.MixProject do
   defp docs do
     [
       main: "readme",
-      extras: ["README.md", "CHANGELOG.md", "LICENSE"],
+      extras: [
+        "README.md",
+        "documentation/guides/writing-a-filesystem.md",
+        "CHANGELOG.md",
+        "LICENSE"
+      ],
+      groups_for_extras: [
+        Guides: ~r{documentation/guides/.*}
+      ],
+      groups_for_modules: [
+        Transport: [Wick.Native, Wick.Fusermount],
+        Codec: [
+          Wick.Protocol,
+          Wick.Protocol.Attr,
+          Wick.Protocol.InHeader,
+          Wick.Protocol.Request,
+          Wick.Protocol.Response
+        ]
+      ],
       source_ref: "v#{@version}",
       source_url: @source_url
     ]

@@ -1,32 +1,56 @@
 defmodule Wick do
   @moduledoc """
-  A standalone Elixir library for building FUSE-based userspace filesystems.
+  Build FUSE userspace filesystems on the BEAM.
 
-  Today this library exposes the low-level transport between the BEAM
-  and the Linux FUSE kernel ABI:
+  Wick has two layers and deliberately stops there — it does not impose
+  a filesystem abstraction. You drive the protocol loop yourself; the
+  [Writing a filesystem](writing-a-filesystem.html) guide walks through
+  a complete read-only example.
 
-    * `Wick.Native` — open `/dev/fuse`, `enif_select`-based
-      readiness notifications, and bounded `read_frame/1` /
-      `write_frame/2`.
-    * `Wick.Fusermount` — mount and unmount FUSE filesystems via
-      the setuid `fusermount3` helper.
+  ## Transport
 
-  Later sub-issues under the native-BEAM FUSE epic will add the protocol
-  codec, INIT handshake, opcode dispatch, and a `Wick.Backend`
-  behaviour for storage callbacks.
+    * `Wick.Native` — opens `/dev/fuse`, arms `enif_select` readiness
+      notifications, and does bounded `read_frame/1` / `write_frame/2`
+      of protocol frames.
+    * `Wick.Fusermount` — mounts and unmounts via the setuid
+      `fusermount3` helper.
 
-  ## Typical flow
+  ## Codec
 
-      {:ok, handle} = Wick.Fusermount.mount("/tmp/my-mount")
-      :ok = Wick.Native.select_read(handle)
+    * `Wick.Protocol` — a pure-Elixir codec for the Linux FUSE kernel
+      protocol (FUSE_KERNEL_VERSION 7.31). `decode_request/1` turns a
+      kernel frame into an opcode, a `Wick.Protocol.InHeader`, and a
+      request struct; `encode_response/3` builds the reply frame.
 
-      receive do
-        {:select, ^handle, :undefined, :ready_input} ->
-          {:ok, request_bytes} = Wick.Native.read_frame(handle)
-          # ... produce `response_bytes` ...
-          :ok = Wick.Native.write_frame(handle, response_bytes)
-      end
+  ## The request/response loop
 
-      :ok = Wick.Fusermount.unmount("/tmp/my-mount")
+  A FUSE server is an event loop over a single mounted fd:
+
+    1. `Wick.Fusermount.mount/2` returns a handle.
+    2. `Wick.Native.select_read/1` arms one read-readiness
+       notification; the owning process then receives
+       `{:select, handle, :undefined, :ready_input}` when a request is
+       waiting.
+    3. `Wick.Native.read_frame/1` reads one request frame.
+    4. `Wick.Protocol.decode_request/1` decodes it.
+    5. You build a reply and write it with
+       `Wick.Protocol.encode_response/3` and
+       `Wick.Native.write_frame/2` (or `Wick.Protocol.encode_error/2`
+       for an errno).
+    6. Re-arm with `select_read/1` and repeat — the notification is
+       one-shot.
+
+  ## The INIT handshake
+
+  The kernel's **first** request after a mount is `:init`, and nothing
+  else works until you answer it with a `Wick.Protocol.Response.Init`
+  carrying a compatible version (clamp the minor to 31) and your
+  negotiated `max_write`. See the guide for the full handshake.
+
+  > #### Linux only {: .info}
+  >
+  > The transport binds the Linux FUSE ABI, so `Wick.Native` and
+  > `Wick.Fusermount` only run on Linux. `Wick.Protocol` is pure
+  > Elixir and runs anywhere.
   """
 end

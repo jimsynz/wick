@@ -30,6 +30,18 @@ end
 Wick compiles a small Rust NIF via [Rustler](https://hexdocs.pm/rustler),
 so a Rust toolchain must be available at build time.
 
+## Writing a filesystem
+
+A FUSE server is an event loop: mount, wait for a readiness
+notification, read a request frame, decode it, write a reply, re-arm,
+repeat. The kernel's first request is always `INIT`, and nothing else
+works until you answer it.
+
+The [Writing a filesystem](documentation/guides/writing-a-filesystem.md)
+guide builds a complete read-only filesystem from scratch and is the
+best place to start. The primitive below shows the raw transport and
+codec call sequence those servers are built from.
+
 ## Mount and serve
 
 ```elixir
