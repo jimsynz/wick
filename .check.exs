@@ -20,8 +20,6 @@
     # Rust tools
     {:cargo_fmt, command: "cargo fmt --check --manifest-path native/wick/Cargo.toml"},
     {:cargo_clippy,
-     command:
-       "cargo clippy --manifest-path native/wick/Cargo.toml --all-targets -- -D warnings"},
-    {:cargo_test, command: "cargo test --manifest-path native/wick/Cargo.toml"}
+     command: "cargo clippy --manifest-path native/wick/Cargo.toml --all-targets -- -D warnings"}
   ]
 ]

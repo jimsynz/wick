@@ -308,7 +308,7 @@ pub fn select_read<'a>(env: Env<'a>, resource: Term<'a>) -> NifResult<Atom> {
             env.as_c_arg(),
             fd as ErlNifEvent,
             ERL_NIF_SELECT_READ,
-            obj,
+            obj as *mut c_void,
             &pid,
             undefined,
         )
